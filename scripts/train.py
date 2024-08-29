@@ -1,6 +1,10 @@
 import argparse
+import sys
 import torch
 from torch import optim
+
+sys.path.insert(0, '.')
+
 from dataloaders.select_data import select_data
 from models.select_model import select_model
 from utils.logger import Logger
