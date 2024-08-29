@@ -23,7 +23,7 @@ datasets/MS/
 
 4. To train the model, run the following command with:
 ```bash
-python ./scripts/train.py
+python ./scripts/train.py\
   --experiment_name=MyExperiment\
   --model_name=UNet\
   --dataset_name=MS\
