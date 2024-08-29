@@ -9,6 +9,7 @@ from dataloaders.select_data import select_data
 from models.select_model import select_model
 from utils.logger import Logger
 from utils.trainer import Trainer
+from utils.losses import DiceLoss
 
 parser = argparse.ArgumentParser(description='Train a model with specified parameters.')
 parser.add_argument('--experiment_name', type=str, default="Experiment", help='Name of the experiment')
@@ -25,7 +26,7 @@ args = parser.parse_args()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = select_model(args.model_name, n_classes=args.n_classes)
 train_data, val_data = select_data(args.dataset_name, args.dataset_path)
-criterion = torch.nn.CrossEntropyLoss()
+criterion = DiceLoss()
 optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 logger = Logger(root_dir=args.logs_path, experiment_name=args.experiment_name)
 
