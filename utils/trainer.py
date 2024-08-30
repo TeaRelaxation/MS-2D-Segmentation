@@ -15,7 +15,8 @@ class Trainer:
                  batch_size,
                  device,
                  logger,
-                 n_classes):
+                 n_classes,
+                 workers):
         self.criterion = criterion
         self.optimizer = optimizer
         self.num_epochs = num_epochs
@@ -24,7 +25,7 @@ class Trainer:
         self.n_classes = n_classes
 
         self.model = model.to(self.device)
-        common_loader_params = {'batch_size': batch_size, 'pin_memory': True, 'num_workers': 4}
+        common_loader_params = {'batch_size': batch_size, 'pin_memory': True, 'num_workers': workers}
         self.train_dataloader = DataLoader(train_dataset, shuffle=True, **common_loader_params)
         self.val_dataloader = DataLoader(val_dataset, shuffle=False, **common_loader_params)
         self.best_dice_score = -float('inf')

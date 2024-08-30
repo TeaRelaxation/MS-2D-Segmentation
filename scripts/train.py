@@ -25,6 +25,7 @@ parser.add_argument('--loss', type=str, default="Dice", help='Loss function')
 parser.add_argument('--height', type=int, default=217, help='Height of image')
 parser.add_argument('--width', type=int, default=181, help='Width of image')
 parser.add_argument('--resize_type', type=str, default="pad", help='Use pad or resize')
+parser.add_argument('--workers', type=int, default=0, help='Number of CPU workers')
 
 args = parser.parse_args()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -44,7 +45,8 @@ trainer = Trainer(
     batch_size=args.batch_size,
     device=device,
     logger=logger,
-    n_classes=args.n_classes
+    n_classes=args.n_classes,
+    workers=args.workers
 )
 
 trainer.train()
