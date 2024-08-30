@@ -22,11 +22,14 @@ parser.add_argument('--batch_size', type=int, default=4, help='Batch size for tr
 parser.add_argument('--epochs', type=int, default=10, help='Number of training epochs')
 parser.add_argument('--lr', type=float, default=0.01, help='Learning rate for the optimizer')
 parser.add_argument('--loss', type=str, default="Dice", help='Loss function')
+parser.add_argument('--height', type=int, default=217, help='Height of image')
+parser.add_argument('--width', type=int, default=181, help='Width of image')
+parser.add_argument('--resize_type', type=str, default="pad", help='Use pad or resize')
 
 args = parser.parse_args()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = select_model(args.model, n_classes=args.n_classes)
-train_data, val_data = select_data(args.dataset, args.dataset_path)
+train_data, val_data = select_data(args.dataset, args.dataset_path, args.height, args.width, args.resize_type)
 criterion = select_loss(args.loss)()
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 logger = Logger(root_dir=args.logs_path, experiment_name=args.experiment)
@@ -40,7 +43,8 @@ trainer = Trainer(
     num_epochs=args.epochs,
     batch_size=args.batch_size,
     device=device,
-    logger=logger
+    logger=logger,
+    n_classes=args.n_classes
 )
 
 trainer.train()

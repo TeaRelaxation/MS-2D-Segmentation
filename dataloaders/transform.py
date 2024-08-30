@@ -3,17 +3,25 @@ from albumentations.pytorch import ToTensorV2
 from torchvision import transforms
 
 
-def get_augmentor(mode):
+def get_resizer(height, width, resize_type):
+    if resize_type == "resize":
+        return A.Resize(height=height, width=width, p=1.0)
+    elif resize_type == "pad":
+        return A.PadIfNeeded(min_height=height, min_width=width, border_mode=0, p=1.0)
+    return None
+
+
+def get_augmentor(mode, height, width, resize_type):
     if mode == "train":
         return A.Compose([
-            A.Resize(height=224, width=192, p=1.0),
-            # A.HorizontalFlip(p=0.5),
-            # A.Rotate(limit=10, p=0.5),
+            get_resizer(height, width, resize_type),
+            A.HorizontalFlip(p=0.5),
+            A.Rotate(limit=10, p=0.5),
             ToTensorV2(),  # HWC -> CHW (Only image not mask)
         ])
     elif mode == "test":
         return A.Compose([
-            A.Resize(height=224, width=192, p=1.0),
+            get_resizer(height, width, resize_type),
             ToTensorV2(),
         ])
     return None

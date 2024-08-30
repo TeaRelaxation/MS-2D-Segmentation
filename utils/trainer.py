@@ -14,16 +14,18 @@ class Trainer:
                  num_epochs,
                  batch_size,
                  device,
-                 logger):
+                 logger,
+                 n_classes):
         self.criterion = criterion
         self.optimizer = optimizer
         self.num_epochs = num_epochs
         self.device = device
         self.logger = logger
+        self.n_classes = n_classes
 
         self.model = model.to(self.device)
         common_loader_params = {'batch_size': batch_size, 'pin_memory': True, 'num_workers': 4}
-        self.train_dataloader = DataLoader(train_dataset, shuffle=False, **common_loader_params)
+        self.train_dataloader = DataLoader(train_dataset, shuffle=True, **common_loader_params)
         self.val_dataloader = DataLoader(val_dataset, shuffle=False, **common_loader_params)
         self.best_dice_score = -float('inf')
 
@@ -51,7 +53,7 @@ class Trainer:
 
                 with torch.no_grad():
                     predicted_labels = torch.argmax(output, dim=1)
-                    train_dice_score += dice_score(lesion_slice, predicted_labels, num_classes=5).item()
+                    train_dice_score += dice_score(lesion_slice, predicted_labels, num_classes=self.n_classes).item()
 
             epoch_loss /= len(self.train_dataloader)
             train_dice_score /= len(self.train_dataloader)
@@ -97,7 +99,7 @@ class Trainer:
                 val_loss += loss.item()
 
                 predicted_labels = torch.argmax(output, dim=1)
-                val_dice_score += dice_score(lesion_slice, predicted_labels, num_classes=5).item()
+                val_dice_score += dice_score(lesion_slice, predicted_labels, num_classes=self.n_classes).item()
 
         # Average the validation loss and Dice score over all batches
         val_loss /= len(self.val_dataloader)
