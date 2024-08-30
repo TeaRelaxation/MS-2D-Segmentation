@@ -1,5 +1,5 @@
 import torch.nn as nn
-from dice import DiceLoss
+from .dice import DiceLoss
 
 
 class CEDiceLoss(nn.Module):

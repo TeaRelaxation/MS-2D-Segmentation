@@ -1,6 +1,6 @@
 import torch.nn as nn
-from dice import DiceLoss
-from focal import FocalLoss
+from .dice import DiceLoss
+from .focal import FocalLoss
 
 
 class CEDiceFocalLoss(nn.Module):
