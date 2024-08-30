@@ -31,7 +31,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = select_model(args.model, n_classes=args.n_classes)
 train_data, val_data = select_data(args.dataset, args.dataset_path, args.height, args.width, args.resize_type)
 criterion = select_loss(args.loss)()
-optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
+optimizer = optim.Adam(model.parameters(), lr=args.lr)
 logger = Logger(root_dir=args.logs_path, experiment_name=args.experiment)
 
 trainer = Trainer(
