@@ -7,7 +7,14 @@ def get_resizer(height, width, resize_type):
     if resize_type == "resize":
         return A.Resize(height=height, width=width, p=1.0)
     elif resize_type == "pad":
-        return A.PadIfNeeded(min_height=height, min_width=width, border_mode=0, p=1.0)
+        return A.PadIfNeeded(
+            min_height=height,
+            min_width=width,
+            border_mode="cv2.BORDER_CONSTANT",
+            value=0.0,
+            mask_value=0.0,
+            p=1.0
+        )
     return None
 
 
