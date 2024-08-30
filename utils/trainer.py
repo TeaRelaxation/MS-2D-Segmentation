@@ -57,7 +57,7 @@ class Trainer:
             train_dice_score /= len(self.train_dataloader)
 
             # Evaluate on validation set
-            val_dice_score, val_loss = self.evaluate()
+            val_loss, val_dice_score = self.evaluate()
 
             # Log and print results
             log_text = f"Epoch {epoch + 1}/{self.num_epochs} --- " \
