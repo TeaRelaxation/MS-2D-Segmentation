@@ -54,7 +54,7 @@ class Trainer:
 
                 with torch.no_grad():
                     predicted_labels = torch.argmax(output, dim=1)
-                    train_dice_score += dice_score(lesion_slice, predicted_labels, num_classes=self.n_classes).item()
+                    train_dice_score += dice_score(predicted_labels, lesion_slice, num_classes=self.n_classes).item()
 
             epoch_loss /= len(self.train_dataloader)
             train_dice_score /= len(self.train_dataloader)
@@ -100,7 +100,7 @@ class Trainer:
                 val_loss += loss.item()
 
                 predicted_labels = torch.argmax(output, dim=1)
-                val_dice_score += dice_score(lesion_slice, predicted_labels, num_classes=self.n_classes).item()
+                val_dice_score += dice_score(predicted_labels, lesion_slice, num_classes=self.n_classes).item()
 
         # Average the validation loss and Dice score over all batches
         val_loss /= len(self.val_dataloader)

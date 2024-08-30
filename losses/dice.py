@@ -10,6 +10,8 @@ class DiceLoss(nn.Module):
 
     def forward(self, pred, target):
         # Apply softmax to the predicted logits to get probabilities
+        # pred shape: (B,C,H,W)
+        # target shape: (B,H,W)
         pred = torch.softmax(pred, dim=1)
 
         # Convert target to one-hot encoding and adjust dimensions
