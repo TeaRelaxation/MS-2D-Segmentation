@@ -2,3 +2,4 @@ nibabel
 torch
 torchvision
 albumentations
+segmentation-models-pytorch
