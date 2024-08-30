@@ -23,7 +23,7 @@ class Trainer:
 
         self.model = model.to(self.device)
         common_loader_params = {'batch_size': batch_size, 'pin_memory': True, 'num_workers': 4}
-        self.train_dataloader = DataLoader(train_dataset, shuffle=True, **common_loader_params)
+        self.train_dataloader = DataLoader(train_dataset, shuffle=False, **common_loader_params)
         self.val_dataloader = DataLoader(val_dataset, shuffle=False, **common_loader_params)
         self.best_dice_score = -float('inf')
 
