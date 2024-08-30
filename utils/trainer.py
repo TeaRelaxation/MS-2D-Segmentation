@@ -62,9 +62,9 @@ class Trainer:
             # Log and print results
             log_text = f"Epoch {epoch + 1}/{self.num_epochs} --- " \
                        f"Train Loss: {epoch_loss:.4f} " \
-                       f"Train Dice Score: {train_dice_score:.4f} " \
-                       f"Validation Loss: {val_loss:.4f} " \
-                       f"Validation Dice Score: {val_dice_score:.4f}"
+                       f"Train Dice: {train_dice_score:.4f} " \
+                       f"Val Loss: {val_loss:.4f} " \
+                       f"Val Dice: {val_dice_score:.4f}"
 
             logging.info(log_text)
             print(log_text)
