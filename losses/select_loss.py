@@ -21,8 +21,8 @@ def get_class_weights():
     return weights_tensor
 
 
-def select_loss(loss_name):
-    class_weights = get_class_weights()
+def select_loss(loss_name, device):
+    class_weights = get_class_weights().to(device)
     if loss_name == "CE":
         return torch.nn.CrossEntropyLoss()
     if loss_name == "WCE":
