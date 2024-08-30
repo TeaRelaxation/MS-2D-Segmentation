@@ -1,19 +1,38 @@
-from torch import nn
-from .dice import DiceLoss
-from .focal import FocalLoss
+import torch
+import numpy as np
+import segmentation_models_pytorch as smp
 from .wce_dice import WCEDiceLoss
-from .ce_dice_focal import CEDiceFocalLoss
+from .wce_dice_focal import WCEDiceFocalLoss
+
+
+def get_class_weights():
+    class_pixels = np.array([497070029, 406090, 50003, 89182, 24286])
+    total_pixels = np.sum(class_pixels)
+
+    # Calculate weights as the inverse frequency
+    class_weights = total_pixels / class_pixels
+
+    # Normalize the weights, so they sum to 1
+    normalized_weights = class_weights / np.sum(class_weights)
+
+    # Convert weights to a PyTorch tensor
+    weights_tensor = torch.tensor(normalized_weights, dtype=torch.float32)
+
+    return weights_tensor
 
 
 def select_loss(loss_name):
+    class_weights = get_class_weights()
     if loss_name == "CE":
-        return nn.CrossEntropyLoss
+        return torch.nn.CrossEntropyLoss()
+    if loss_name == "WCE":
+        return torch.nn.CrossEntropyLoss(weight=class_weights)
     elif loss_name == "Dice":
-        return DiceLoss
+        return smp.losses.DiceLoss(mode="multiclass")
     elif loss_name == "Focal":
-        return FocalLoss
+        return smp.losses.FocalLoss(mode="multiclass", alpha=class_weights.tolist())
     elif loss_name == "WCEDice":
-        return WCEDiceLoss
-    elif loss_name == "CEDiceFocal":
-        return CEDiceFocalLoss
+        return WCEDiceLoss(class_weights=class_weights)
+    elif loss_name == "WCEDiceFocal":
+        return WCEDiceFocalLoss(class_weights=class_weights)
     return None
