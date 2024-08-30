@@ -8,7 +8,7 @@ def select_data(dataset_name, dataset_path):
     train_augmentor = get_augmentor(mode="train")
     test_augmentor = get_augmentor(mode="test")
     if dataset_name == "MS":
-        normalizer = get_normalizer(mean=0.5, std=0.5)
+        normalizer = get_normalizer(mean=47.532, std=51.077)
         train_data = MSDataset(root_dir=f"{dataset_path}/test", augmentor=train_augmentor, normalizer=normalizer)
         val_data = MSDataset(root_dir=f"{dataset_path}/test", augmentor=test_augmentor, normalizer=normalizer)
     return train_data, val_data

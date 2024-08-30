@@ -46,7 +46,8 @@ class MSDataset(Dataset):
         lesion_slice = lesion_slice.transpose(1, 0)  # (H=217,W=181)
 
         augmented = self.augmentor(image=flair_slice, mask=lesion_slice)
-        flair_slice = self.normalizer(augmented["image"])  # (C=1,H=217,W=181)
+        flair_slice = augmented["image"]  # (C=1,H=217,W=181)
         lesion_slice = augmented["mask"]  # (H=217,W=181)
 
+        flair_slice = self.normalizer(flair_slice)  # (C=1,H=217,W=181)
         return flair_slice, lesion_slice

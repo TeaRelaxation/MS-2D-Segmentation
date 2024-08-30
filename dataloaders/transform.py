@@ -9,7 +9,7 @@ def get_augmentor(mode):
             A.Resize(height=217, width=181, p=1.0),
             A.HorizontalFlip(p=0.5),
             A.Rotate(limit=10, p=0.5),
-            ToTensorV2(),
+            ToTensorV2(),  # HWC -> CHW (Only image not mask)
         ])
     elif mode == "test":
         return A.Compose([
