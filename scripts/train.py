@@ -19,11 +19,11 @@ parser.add_argument('--dataset_path', type=str, default="../datasets/MS", help='
 parser.add_argument('--logs_path', type=str, default="../logs", help='Path to save logs')
 parser.add_argument('--n_classes', type=int, default=5, help='Number of classes')
 parser.add_argument('--batch_size', type=int, default=4, help='Batch size for training')
-parser.add_argument('--epochs', type=int, default=10, help='Number of training epochs')
-parser.add_argument('--lr', type=float, default=0.01, help='Learning rate for the optimizer')
-parser.add_argument('--loss', type=str, default="Dice", help='Loss function')
-parser.add_argument('--height', type=int, default=217, help='Height of image')
-parser.add_argument('--width', type=int, default=181, help='Width of image')
+parser.add_argument('--epochs', type=int, default=20, help='Number of training epochs')
+parser.add_argument('--lr', type=float, default=2e-4, help='Learning rate for the optimizer')
+parser.add_argument('--loss', type=str, default="WCEDiceFocal", help='Loss function')
+parser.add_argument('--height', type=int, default=224, help='Height of image')
+parser.add_argument('--width', type=int, default=192, help='Width of image')
 parser.add_argument('--resize_type', type=str, default="pad", help='Use pad or resize')
 parser.add_argument('--workers', type=int, default=0, help='Number of CPU workers')
 
@@ -33,6 +33,7 @@ model = select_model(args.model, n_classes=args.n_classes)
 train_data, val_data = select_data(args.dataset, args.dataset_path, args.height, args.width, args.resize_type)
 criterion = select_loss(args.loss, device)
 optimizer = optim.Adam(model.parameters(), lr=args.lr)
+scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs*1, eta_min=1e-5)
 logger = Logger(root_dir=args.logs_path, experiment_name=args.experiment)
 
 trainer = Trainer(
@@ -41,6 +42,7 @@ trainer = Trainer(
     model=model,
     criterion=criterion,
     optimizer=optimizer,
+    scheduler=scheduler,
     num_epochs=args.epochs,
     batch_size=args.batch_size,
     device=device,

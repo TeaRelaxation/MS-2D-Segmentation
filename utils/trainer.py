@@ -11,6 +11,7 @@ class Trainer:
                  model,
                  criterion,
                  optimizer,
+                 scheduler,
                  num_epochs,
                  batch_size,
                  device,
@@ -19,6 +20,7 @@ class Trainer:
                  workers):
         self.criterion = criterion
         self.optimizer = optimizer
+        self.scheduler = scheduler
         self.num_epochs = num_epochs
         self.device = device
         self.logger = logger
@@ -55,6 +57,10 @@ class Trainer:
                 with torch.no_grad():
                     predicted_labels = torch.argmax(output, dim=1)
                     train_dice_score += dice_score(predicted_labels, lesion_slice, num_classes=self.n_classes).item()
+
+                # print("End of batch")  # Debug log
+
+            self.scheduler.step()
 
             epoch_loss /= len(self.train_dataloader)
             train_dice_score /= len(self.train_dataloader)
