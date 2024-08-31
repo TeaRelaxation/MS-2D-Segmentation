@@ -11,7 +11,7 @@ def get_class_weights():
     total_pixels = np.sum(class_pixels)
 
     # Calculate weights as the inverse frequency
-    class_weights = class_pixels / total_pixels
+    class_weights = total_pixels / class_pixels
 
     # Normalize the weights, so they sum to 1
     normalized_weights = class_weights / np.sum(class_weights)
