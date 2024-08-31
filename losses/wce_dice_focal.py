@@ -4,14 +4,14 @@ from .focal import FocalLoss
 
 
 class WCEDiceFocalLoss(nn.Module):
-    def __init__(self, class_weights, weight_ce=0.25, weight_dice=0.5, weight_focal=0.25):
+    def __init__(self, class_weights, weight_ce=0.1, weight_dice=0.8, weight_focal=0.1):
         super(WCEDiceFocalLoss, self).__init__()
         self.weight_ce = weight_ce
         self.weight_dice = weight_dice
         self.weight_focal = weight_focal
         self.cross_entropy = nn.CrossEntropyLoss(weight=class_weights)
         self.dice_loss = smp.losses.DiceLoss(mode="multiclass")
-        self.focal_loss = FocalLoss(alpha=class_weights, gamma=2.0)
+        self.focal_loss = FocalLoss(gamma=2.0)
 
     def forward(self, pred, target):
         ce_loss = self.cross_entropy(pred, target)
