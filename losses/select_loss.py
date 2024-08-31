@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import segmentation_models_pytorch as smp
+from .focal import FocalLoss
 from .wce_dice import WCEDiceLoss
 from .wce_dice_focal import WCEDiceFocalLoss
 
@@ -30,7 +31,7 @@ def select_loss(loss_name, device):
     elif loss_name == "Dice":
         return smp.losses.DiceLoss(mode="multiclass")
     elif loss_name == "Focal":
-        return smp.losses.FocalLoss(mode="multiclass", alpha=class_weights.tolist())
+        return FocalLoss(alpha=class_weights, gamma=2.0)
     elif loss_name == "WCEDice":
         return WCEDiceLoss(class_weights=class_weights)
     elif loss_name == "WCEDiceFocal":
