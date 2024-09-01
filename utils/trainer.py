@@ -1,7 +1,7 @@
 import logging
 import torch
+from segmentation_models_pytorch.metrics import functional as metric
 from torch.utils.data import DataLoader
-from .dice import dice_score
 
 
 class Trainer:
@@ -55,8 +55,17 @@ class Trainer:
                 epoch_loss += loss.item()
 
                 with torch.no_grad():
-                    predicted_labels = torch.argmax(output, dim=1)
-                    train_dice_score += dice_score(predicted_labels, lesion_slice, num_classes=self.n_classes).item()
+                    predicted_labels = torch.argmax(output, dim=1).long()
+
+                    tp, fp, fn, tn = metric.get_stats(
+                        predicted_labels,
+                        lesion_slice,
+                        mode="multiclass",
+                        ignore_index=-1,
+                        num_classes=self.n_classes
+                    )
+
+                    train_dice_score += metric.f1_score(tp, fp, fn, tn, reduction="macro-imagewise")
 
                 # print("End of batch")  # Debug log
 
@@ -105,8 +114,17 @@ class Trainer:
                 loss = self.criterion(output, lesion_slice)
                 val_loss += loss.item()
 
-                predicted_labels = torch.argmax(output, dim=1)
-                val_dice_score += dice_score(predicted_labels, lesion_slice, num_classes=self.n_classes).item()
+                predicted_labels = torch.argmax(output, dim=1).long()
+
+                tp, fp, fn, tn = metric.get_stats(
+                    predicted_labels,
+                    lesion_slice,
+                    mode="multiclass",
+                    ignore_index=-1,
+                    num_classes=self.n_classes
+                )
+
+                val_dice_score += metric.f1_score(tp, fp, fn, tn, reduction="macro-imagewise")
 
         # Average the validation loss and Dice score over all batches
         val_loss /= len(self.val_dataloader)

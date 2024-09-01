@@ -8,8 +8,8 @@ class DiceFocalLoss(nn.Module):
         super(DiceFocalLoss, self).__init__()
         self.weight_dice = weight_dice
         self.weight_focal = weight_focal
-        self.dice_loss = smp.losses.DiceLoss(mode="multiclass")
-        self.focal_loss = FocalLoss(gamma=2.0)
+        self.dice_loss = smp.losses.DiceLoss(mode="multiclass", ignore_index=-1)
+        self.focal_loss = FocalLoss(gamma=2.0, ignore_index=-1)
 
     def forward(self, pred, target):
         dice_loss = self.dice_loss(pred, target)

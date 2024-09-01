@@ -26,13 +26,13 @@ def get_class_weights():
 def select_loss(loss_name, device):
     class_weights = get_class_weights().to(device)
     if loss_name == "CE":
-        return torch.nn.CrossEntropyLoss()
+        return torch.nn.CrossEntropyLoss(ignore_index=-1)
     if loss_name == "WCE":
-        return torch.nn.CrossEntropyLoss(weight=class_weights)
+        return torch.nn.CrossEntropyLoss(weight=class_weights, ignore_index=-1)
     elif loss_name == "Dice":
-        return smp.losses.DiceLoss(mode="multiclass")
+        return smp.losses.DiceLoss(mode="multiclass", ignore_index=-1)
     elif loss_name == "Focal":
-        return FocalLoss(gamma=2.0)
+        return FocalLoss(gamma=2.0, ignore_index=-1)
     elif loss_name == "DiceFocal":
         return DiceFocalLoss()
     elif loss_name == "WCEDice":

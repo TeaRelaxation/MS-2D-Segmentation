@@ -1,6 +1,7 @@
 .idea/
 datasets/
 logs/
+playground/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

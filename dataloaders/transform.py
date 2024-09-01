@@ -12,7 +12,7 @@ def get_resizer(height, width, resize_type):
             min_width=width,
             border_mode=0,
             value=0,
-            mask_value=0,
+            mask_value=-1,
             p=1.0
         )
     return None
