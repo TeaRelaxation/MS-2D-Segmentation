@@ -9,12 +9,14 @@ class Logger:
         self.path = os.path.join(root_dir, experiment_name)
         os.makedirs(self.path, exist_ok=True)
         log_path = os.path.abspath(os.path.join(self.path, "logs.log"))
-        print(log_path)
-        logging.basicConfig(
-            handlers=[logging.FileHandler(log_path)],
-            level=logging.INFO,
-            format='%(asctime)s %(message)s'
-        )
+
+        formatter = logging.Formatter(fmt='%(asctime)s %(message)s')
+        fh = logging.FileHandler(log_path)
+        fh.setFormatter(formatter)
+
+        self.logger = logging.getLogger("root")
+        self.logger.setLevel(logging.INFO)
+        self.logger.addHandler(fh)
 
     def save_model(self, model, filename):
         model_path = os.path.join(self.path, filename)
@@ -48,7 +50,6 @@ class Logger:
         )
         self.print_log(log_text)
 
-    @staticmethod
-    def print_log(log_text):
-        logging.info(log_text)
+    def print_log(self, log_text):
+        self.logger.log(msg=log_text, level=logging.INFO)
         print(log_text)
