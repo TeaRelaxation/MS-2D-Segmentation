@@ -149,12 +149,13 @@ class Trainer:
             num_classes=self.n_classes
         )
 
-        dice_3d = metric.f1_score(tp, fp, fn, tn).tolist()[0]
-        print(f"3D Dice class 0: {dice_3d[0]}")
-        print(f"3D Dice class 1: {dice_3d[1]}")
-        print(f"3D Dice class 2: {dice_3d[2]}")
-        print(f"3D Dice class 3: {dice_3d[3]}")
-        print(f"3D Dice class 4: {dice_3d[4]}")
+        dice_3d = metric.f1_score(tp, fp, fn, tn, reduction="macro-imagewise").item()
+        print(f"3D Dice: {dice_3d}")
+        # print(f"3D Dice class 0: {dice_3d[0]}")
+        # print(f"3D Dice class 1: {dice_3d[1]}")
+        # print(f"3D Dice class 2: {dice_3d[2]}")
+        # print(f"3D Dice class 3: {dice_3d[3]}")
+        # print(f"3D Dice class 4: {dice_3d[4]}")
 
 
 def remove_pad(preds, targets):
