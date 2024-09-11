@@ -8,8 +8,13 @@ class Logger:
     def __init__(self, root_dir, experiment_name):
         self.path = os.path.join(root_dir, experiment_name)
         os.makedirs(self.path, exist_ok=True)
-        log_path = os.path.join(self.path, "logs.log")
-        logging.basicConfig(filename=log_path, level=logging.INFO, format='%(asctime)s %(message)s')
+        log_path = os.path.abspath(os.path.join(self.path, "logs.log"))
+        print(log_path)
+        logging.basicConfig(
+            handlers=[logging.FileHandler(log_path)],
+            level=logging.INFO,
+            format='%(asctime)s %(message)s'
+        )
 
     def save_model(self, model, filename):
         model_path = os.path.join(self.path, filename)
