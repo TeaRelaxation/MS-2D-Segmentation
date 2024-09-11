@@ -1,5 +1,4 @@
 from segmentation_models_pytorch.metrics import functional as metric
-import torch
 
 
 class Metrics:
@@ -24,10 +23,8 @@ class Metrics:
         self.recall_list = []
 
     def iteration_end(self, output, label, loss):
-        predicted_labels = torch.argmax(output, dim=1).long()
-
         tp, fp, fn, tn = metric.get_stats(
-            predicted_labels,
+            output,
             label,
             mode="multiclass",
             ignore_index=-1,
