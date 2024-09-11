@@ -1,23 +1,24 @@
-import logging
 import torch
-from segmentation_models_pytorch.metrics import functional as metric
 from torch.utils.data import DataLoader
+from .metrics import Metrics
 
 
 class Trainer:
-    def __init__(self,
-                 train_dataset,
-                 val_dataset,
-                 model,
-                 criterion,
-                 optimizer,
-                 scheduler,
-                 num_epochs,
-                 batch_size,
-                 device,
-                 logger,
-                 n_classes,
-                 workers):
+    def __init__(
+            self,
+            train_dataset,
+            val_dataset,
+            model,
+            criterion,
+            optimizer,
+            scheduler,
+            num_epochs,
+            batch_size,
+            device,
+            logger,
+            n_classes,
+            workers
+    ):
         self.criterion = criterion
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -32,11 +33,13 @@ class Trainer:
         self.val_dataloader = DataLoader(val_dataset, shuffle=False, **common_loader_params)
         self.best_dice_score = -float('inf')
 
+        self.train_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
+        self.val_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
+        self.history = {}
+
     def train(self):
         for epoch in range(self.num_epochs):
             self.model.train()
-            epoch_loss = 0
-            train_dice_score = 0
 
             for flair_slice, lesion_slice in self.train_dataloader:
                 flair_slice = flair_slice.to(self.device)
@@ -52,53 +55,43 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
 
-                epoch_loss += loss.item()
-
                 with torch.no_grad():
-                    predicted_labels = torch.argmax(output, dim=1).long()
-
-                    tp, fp, fn, tn = metric.get_stats(
-                        predicted_labels,
-                        lesion_slice,
-                        mode="multiclass",
-                        ignore_index=-1,
-                        num_classes=self.n_classes
-                    )
-
-                    train_dice_score += metric.f1_score(tp, fp, fn, tn, reduction="macro-imagewise")
-
-                # print("End of batch")  # Debug log
+                    self.train_metrics.iteration_end(output=output, label=lesion_slice, loss=loss)
 
             self.scheduler.step()
 
-            epoch_loss /= len(self.train_dataloader)
-            train_dice_score /= len(self.train_dataloader)
+            n_batches = len(self.train_dataloader)
+            self.train_metrics.epoch_end(n_batches)
 
             # Evaluate on validation set
-            val_loss, val_dice_score = self.evaluate()
+            self.evaluate()
 
             # Log and print results
-            log_text = f"Epoch {epoch + 1}/{self.num_epochs} --- " \
-                       f"Train Loss: {epoch_loss:.4f} " \
-                       f"Train Dice: {train_dice_score:.4f} " \
-                       f"Val Loss: {val_loss:.4f} " \
-                       f"Val Dice: {val_dice_score:.4f}"
-
-            logging.info(log_text)
-            print(log_text)
+            self.logger.log_train(
+                epochs=self.num_epochs,
+                train_metrics=self.train_metrics,
+                val_metrics=self.val_metrics
+            )
 
             # Save the model if it has the best Dice score
-            if val_dice_score > self.best_dice_score:
-                self.best_dice_score = val_dice_score
+            current_val_dice = self.val_metrics.dice_list[-1]
+            if current_val_dice > self.best_dice_score:
+                self.best_dice_score = current_val_dice
                 self.logger.save_model(self.model, "best_model.pth")
+
+            self.logger.print_log("-" * 50)
 
         # Save the model from the last epoch
         self.logger.save_model(self.model, "last_model.pth")
 
+        self.history = {
+            "train": self.train_metrics.get_history_dict(),
+            "val": self.val_metrics.get_history_dict()
+        }
+        self.logger.save_history(self.history, "history.pkl")
+
     def evaluate(self):
         self.model.eval()
-        val_dice_score = 0
-        val_loss = 0
 
         with torch.no_grad():
             for flair_slice, lesion_slice in self.val_dataloader:
@@ -112,22 +105,8 @@ class Trainer:
 
                 # Calculate loss
                 loss = self.criterion(output, lesion_slice)
-                val_loss += loss.item()
 
-                predicted_labels = torch.argmax(output, dim=1).long()
+                self.val_metrics.iteration_end(output=output, label=lesion_slice, loss=loss)
 
-                tp, fp, fn, tn = metric.get_stats(
-                    predicted_labels,
-                    lesion_slice,
-                    mode="multiclass",
-                    ignore_index=-1,
-                    num_classes=self.n_classes
-                )
-
-                val_dice_score += metric.f1_score(tp, fp, fn, tn, reduction="macro-imagewise")
-
-        # Average the validation loss and Dice score over all batches
-        val_loss /= len(self.val_dataloader)
-        val_dice_score /= len(self.val_dataloader)
-
-        return val_loss, val_dice_score
+            n_batches = len(self.val_dataloader)
+            self.val_metrics.epoch_end(n_batches)

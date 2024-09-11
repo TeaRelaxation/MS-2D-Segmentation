@@ -12,14 +12,14 @@ from utils.trainer import Trainer
 from losses.select_loss import select_loss
 
 parser = argparse.ArgumentParser(description='Train a model with specified parameters.')
-parser.add_argument('--experiment', type=str, default="Experiment48", help='Name of the experiment')
-parser.add_argument('--model', type=str, default="UNet", help='Name of the model to use')
+parser.add_argument('--experiment', type=str, default="Exp1", help='Name of the experiment')
+parser.add_argument('--model', type=str, default="DeepLabV3Plus_ResNet34", help='Name of the model to use')
 parser.add_argument('--dataset', type=str, default="MS", help='Name of the dataset')
 parser.add_argument('--dataset_path', type=str, default="../datasets/MS", help='Path to the dataset')
 parser.add_argument('--logs_path', type=str, default="../logs", help='Path to save logs')
 parser.add_argument('--n_classes', type=int, default=5, help='Number of classes')
-parser.add_argument('--batch_size', type=int, default=4, help='Batch size for training')
-parser.add_argument('--epochs', type=int, default=20, help='Number of training epochs')
+parser.add_argument('--batch_size', type=int, default=32, help='Batch size for training')
+parser.add_argument('--epochs', type=int, default=2, help='Number of training epochs')
 parser.add_argument('--lr', type=float, default=2e-4, help='Learning rate for the optimizer')
 parser.add_argument('--loss', type=str, default="WCEDiceFocal", help='Loss function')
 parser.add_argument('--height', type=int, default=224, help='Height of image')
