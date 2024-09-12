@@ -1,5 +1,4 @@
 import torch
-from segmentation_models_pytorch.metrics import functional as metric
 from torch.utils.data import DataLoader
 from .metrics import Metrics
 
@@ -36,6 +35,7 @@ class Trainer:
 
         self.train_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
         self.val_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
+        self.val_3d_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
         self.history = {}
 
     def train(self):
@@ -68,11 +68,15 @@ class Trainer:
             # Evaluate on validation set
             preds_list, targets_list = self.evaluate()
 
+            # 3D Evaluation
+            self.evaluate_3d(preds_list, targets_list)
+
             # Log and print results
             self.logger.log_train(
                 epochs=self.num_epochs,
                 train_metrics=self.train_metrics,
-                val_metrics=self.val_metrics
+                val_metrics=self.val_metrics,
+                val_3d_metrics=self.val_3d_metrics
             )
 
             # Save the model if it has the best Dice score
@@ -81,9 +85,6 @@ class Trainer:
                 self.best_dice_score = current_val_dice
                 self.logger.save_model(self.model, "best_model.pth")
 
-            # 3D Evaluation
-            self.evaluate_3d(preds_list, targets_list)
-
             self.logger.print_log("-" * 50)
 
         # Save the model from the last epoch
@@ -91,7 +92,8 @@ class Trainer:
 
         self.history = {
             "train": self.train_metrics.get_history_dict(),
-            "val": self.val_metrics.get_history_dict()
+            "val": self.val_metrics.get_history_dict(),
+            "val_3d": self.val_3d_metrics.get_history_dict(),
         }
         self.logger.save_history(self.history, "history.pkl")
 
@@ -125,37 +127,21 @@ class Trainer:
         return preds_list, targets_list
 
     def evaluate_3d(self, preds_list, targets_list):
-        # convert list to tensor: (N,H,W)
-        preds_tensor = torch.cat(preds_list, dim=0)
-        targets_tensor = torch.cat(targets_list, dim=0)
+        with torch.no_grad():
+            # convert list to tensor: (N,H,W)
+            preds_tensor = torch.cat(preds_list, dim=0)
+            targets_tensor = torch.cat(targets_list, dim=0)
 
-        # Remove padding
-        preds_cropped_tensor, targets_cropped_tensor = remove_pad(preds_tensor, targets_tensor)
+            # Remove padding
+            preds_cropped_tensor, targets_cropped_tensor = remove_pad(preds_tensor, targets_tensor)
 
-        # Convert 2D to 3D
-        split_size = 181
-        preds_3d = convert_3d(preds_cropped_tensor, split_size)
-        targets_3d = convert_3d(targets_cropped_tensor, split_size)
+            # Convert 2D to 3D: (N,H,W,D)
+            split_size = 181
+            preds_3d = convert_3d(preds_cropped_tensor, split_size)
+            targets_3d = convert_3d(targets_cropped_tensor, split_size)
 
-        # (N,H,W,D) -> (N,H*W*D)
-        preds_flat = preds_3d.reshape(preds_3d.shape[0], -1)
-        targets_flat = targets_3d.reshape(targets_3d.shape[0], -1)
-
-        tp, fp, fn, tn = metric.get_stats(
-            preds_flat,
-            targets_flat,
-            mode="multiclass",
-            ignore_index=-1,
-            num_classes=self.n_classes
-        )
-
-        dice_3d = metric.f1_score(tp, fp, fn, tn, reduction="macro-imagewise").item()
-        print(f"3D Dice: {dice_3d}")
-        # print(f"3D Dice class 0: {dice_3d[0]}")
-        # print(f"3D Dice class 1: {dice_3d[1]}")
-        # print(f"3D Dice class 2: {dice_3d[2]}")
-        # print(f"3D Dice class 3: {dice_3d[3]}")
-        # print(f"3D Dice class 4: {dice_3d[4]}")
+            self.val_3d_metrics.iteration_end(output=preds_3d, label=targets_3d, loss=torch.tensor(0))
+            self.val_3d_metrics.epoch_end(n_batches=1)
 
 
 def remove_pad(preds, targets):

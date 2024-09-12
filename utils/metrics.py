@@ -23,6 +23,10 @@ class Metrics:
         self.recall_list = []
 
     def iteration_end(self, output, label, loss):
+        # (N,d1,d2,d3,...) -> (N,d1*d2*d3*...)
+        output = output.reshape(output.shape[0], -1)
+        label = label.reshape(label.shape[0], -1)
+
         tp, fp, fn, tn = metric.get_stats(
             output,
             label,
