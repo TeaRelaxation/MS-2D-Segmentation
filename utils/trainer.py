@@ -30,7 +30,7 @@ class Trainer:
         self.model = model.to(self.device)
         common_loader_params = {'batch_size': batch_size, 'pin_memory': True, 'num_workers': workers}
         self.train_dataloader = DataLoader(train_dataset, shuffle=True, **common_loader_params)
-        self.val_dataloader = DataLoader(val_dataset, shuffle=False, **common_loader_params)
+        self.val_dataloader = DataLoader(val_dataset, shuffle=True, **common_loader_params)
         self.best_dice_score = -float('inf')
 
         self.train_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
@@ -145,6 +145,7 @@ class Trainer:
 
 
 def remove_pad(preds, targets):
+    # preds and targets shape: (N,H,W)
     # Find where padded values are not -1
     mask = targets != -1
 
