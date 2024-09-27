@@ -33,9 +33,9 @@ class Trainer:
         self.val_dataloader = DataLoader(val_dataset, shuffle=True, **common_loader_params)
         self.best_dice_score = -float('inf')
 
-        self.train_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
-        self.val_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
-        self.val_3d_metrics = Metrics(reduction="macro-imagewise", n_classes=self.n_classes)
+        self.train_metrics = Metrics(n_classes=self.n_classes)
+        self.val_metrics = Metrics(n_classes=self.n_classes)
+        self.val_3d_metrics = Metrics(n_classes=self.n_classes)
         self.history = {}
 
     def train(self):
@@ -80,7 +80,7 @@ class Trainer:
             )
 
             # Save the model if it has the best Dice score
-            current_val_dice = self.val_metrics.dice_list[-1]
+            current_val_dice = self.val_metrics.history["dice"][-1][-1]
             if current_val_dice > self.best_dice_score:
                 self.best_dice_score = current_val_dice
                 self.logger.save_model(self.model, "best_model.pth")
@@ -91,9 +91,9 @@ class Trainer:
         self.logger.save_model(self.model, "last_model.pth")
 
         self.history = {
-            "train": self.train_metrics.get_history_dict(),
-            "val": self.val_metrics.get_history_dict(),
-            "val_3d": self.val_3d_metrics.get_history_dict(),
+            "train": self.train_metrics.history,
+            "val": self.val_metrics.history,
+            "val_3d": self.val_3d_metrics.history
         }
         self.logger.save_history(self.history, "history.pkl")
 
