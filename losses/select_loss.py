@@ -25,6 +25,8 @@ def get_class_weights():
 
 def select_loss(loss_name, device):
     class_weights = get_class_weights().to(device)
+    wc = 2.0 / 9.0
+    focal_class_weights = torch.tensor([wc/2, wc, wc, wc, wc], dtype=torch.float32)
     if loss_name == "CE":
         return torch.nn.CrossEntropyLoss(ignore_index=-1)
     if loss_name == "WCE":
@@ -38,5 +40,5 @@ def select_loss(loss_name, device):
     elif loss_name == "WCEDice":
         return WCEDiceLoss(class_weights=class_weights)
     elif loss_name == "WCEDiceFocal":
-        return WCEDiceFocalLoss(class_weights=class_weights)
+        return WCEDiceFocalLoss(class_weights=class_weights, focal_class_weights=focal_class_weights)
     return None
