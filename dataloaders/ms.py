@@ -4,10 +4,12 @@ from torch.utils.data import Dataset
 
 
 class MSDataset(Dataset):
-    def __init__(self, root_dir, augmentor, normalizer):
+    def __init__(self, root_dir, augmentor, max_pixel, normalizer, in_channels):
         self.root_dir = root_dir
         self.augmentor = augmentor
+        self.max_pixel = max_pixel
         self.normalizer = normalizer
+        self.in_channels = in_channels
 
         self.samples = self._load_samples()
 
@@ -45,9 +47,16 @@ class MSDataset(Dataset):
         flair_slice = flair_slice.transpose(2, 1, 0)  # (H=217,W=181,C=1)
         lesion_slice = lesion_slice.transpose(1, 0)  # (H=217,W=181)
 
+        # Scale to [0, 1)
+        flair_slice /= self.max_pixel
+
         augmented = self.augmentor(image=flair_slice, mask=lesion_slice)
         flair_slice = augmented["image"]  # (C=1,H=217,W=181)
         lesion_slice = augmented["mask"]  # (H=217,W=181)
 
-        flair_slice = self.normalizer(flair_slice)  # (C=1,H=217,W=181)
+        if self.in_channels == 3:
+            flair_slice = flair_slice.repeat(3, 1, 1)  # Repeat the channel dimension 3 times
+
+        flair_slice = self.normalizer(flair_slice)  # (C=1or3,H=217,W=181)
+
         return flair_slice, lesion_slice

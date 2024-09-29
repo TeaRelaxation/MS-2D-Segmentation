@@ -22,18 +22,45 @@ parser.add_argument('--batch_size', type=int, default=32, help='Batch size for t
 parser.add_argument('--epochs', type=int, default=2, help='Number of training epochs')
 parser.add_argument('--lr', type=float, default=2e-4, help='Learning rate for the optimizer')
 parser.add_argument('--loss', type=str, default="WCEDiceFocal", help='Loss function')
-parser.add_argument('--height', type=int, default=128, help='Height of image')
-parser.add_argument('--width', type=int, default=128, help='Width of image')
 parser.add_argument('--workers', type=int, default=0, help='Number of CPU workers')
+parser.add_argument('--max_pixel', type=float, default=375.3621, help='Max pixel value for scaling to 0 to 1')
+parser.add_argument('--mean', type=float, default=0.1266, help='Mean for normalization')
+parser.add_argument('--std', type=float, default=0.1360, help='Std for normalization')
+parser.add_argument('--crop_h', type=int, default=128, help='Height of image for training')
+parser.add_argument('--crop_w', type=int, default=128, help='Width of image for training')
+parser.add_argument('--infer_h', type=int, default=224, help='Height of image for inference')
+parser.add_argument('--infer_w', type=int, default=192, help='Width of image for inference')
+parser.add_argument('--in_channels', type=int, default=1, help='Number of input channels (1 or 3)')
+parser.add_argument('--is_imagenet', type=str, default="False", help='Use ImageNet mean and std (True or False)')
 
 args = parser.parse_args()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = select_model(args.model, n_classes=args.n_classes)
-train_data, val_data = select_data(args.dataset, args.dataset_path, args.height, args.width)
 criterion = select_loss(args.loss, device)
+logger = Logger(root_dir=args.logs_path, experiment_name=args.experiment)
+
+model = select_model(
+    args.model,
+    n_classes=args.n_classes,
+    in_channels=args.in_channels,
+    is_imagenet=args.is_imagenet
+)
+
 optimizer = optim.Adam(model.parameters(), lr=args.lr)
 scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs*1, eta_min=1e-5)
-logger = Logger(root_dir=args.logs_path, experiment_name=args.experiment)
+
+train_data, val_data = select_data(
+    dataset_name=args.dataset,
+    dataset_path=args.dataset_path,
+    max_pixel=args.max_pixel,
+    mean=args.mean,
+    std=args.std,
+    crop_h=args.crop_h,
+    crop_w=args.crop_w,
+    infer_h=args.infer_h,
+    infer_w=args.infer_w,
+    in_channels=args.in_channels,
+    is_imagenet=args.is_imagenet
+)
 
 trainer = Trainer(
     train_dataset=train_data,

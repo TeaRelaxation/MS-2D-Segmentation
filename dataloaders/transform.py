@@ -40,4 +40,4 @@ def get_augmentor(mode, height, width):
 
 
 def get_normalizer(mean, std):
-    return transforms.Normalize(mean=[mean], std=[std])
+    return transforms.Normalize(mean=mean, std=std)
