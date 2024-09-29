@@ -4,7 +4,7 @@ from .focal import FocalLoss
 
 
 class WCEDiceFocalLoss(nn.Module):
-    def __init__(self, class_weights, focal_class_weights, weight_ce=2.0, weight_dice=1.0, weight_focal=1.0):
+    def __init__(self, class_weights, focal_class_weights, weight_ce=1.0, weight_dice=1.0, weight_focal=1.0):
         super(WCEDiceFocalLoss, self).__init__()
         self.weight_ce = weight_ce
         self.weight_dice = weight_dice
