@@ -40,5 +40,5 @@ def select_loss(loss_name, device):
     elif loss_name == "WCEDice":
         return WCEDiceLoss(class_weights=class_weights)
     elif loss_name == "WCEDiceFocal":
-        return WCEDiceFocalLoss(class_weights=class_weights, focal_class_weights=focal_class_weights)
+        return WCEDiceFocalLoss(class_weights=class_weights, focal_class_weights=class_weights)
     return None
