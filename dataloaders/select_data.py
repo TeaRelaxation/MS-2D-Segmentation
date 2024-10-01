@@ -29,7 +29,7 @@ def select_data(
             normalizer = get_normalizer(mean=[mean, mean, mean], std=[std, std, std])
     else:
         if is_imagenet == "True":
-            normalizer = get_normalizer(mean=[mean], std=[std])
+            normalizer = get_normalizer(mean=[0.449], std=[0.226])
         else:
             normalizer = get_normalizer(mean=[mean], std=[std])
 
