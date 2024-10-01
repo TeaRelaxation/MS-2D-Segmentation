@@ -38,6 +38,12 @@ class MSDataset(Dataset):
         flair_img = nib.load(flair_path).get_fdata()
         lesion_img = nib.load(lesion_path).get_fdata()
 
+        # Scale to [0, 1)
+        if self.max_pixel == 0.0:
+            flair_img /= flair_img.max()
+        else:
+            flair_img /= self.max_pixel
+
         flair_slice = flair_img[:, :, slice_idx]
         lesion_slice = lesion_img[:, :, slice_idx]
 
@@ -46,9 +52,6 @@ class MSDataset(Dataset):
 
         flair_slice = flair_slice.transpose(2, 1, 0)  # (H=217,W=181,C=1)
         lesion_slice = lesion_slice.transpose(1, 0)  # (H=217,W=181)
-
-        # Scale to [0, 1)
-        flair_slice /= self.max_pixel
 
         augmented = self.augmentor(image=flair_slice, mask=lesion_slice)
         flair_slice = augmented["image"]  # (C=1,H=217,W=181)
