@@ -30,9 +30,9 @@ class Trainer:
         self.depth = depth
 
         self.model = model.to(self.device)
-        common_loader_params = {'batch_size': batch_size, 'pin_memory': True, 'num_workers': workers}
-        self.train_dataloader = DataLoader(train_dataset, shuffle=True, **common_loader_params)
-        self.val_dataloader = DataLoader(val_dataset, shuffle=True, **common_loader_params)
+        common_loader_params = {'pin_memory': True, 'num_workers': workers}
+        self.train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size, **common_loader_params)
+        self.val_dataloader = DataLoader(val_dataset, shuffle=True, batch_size=batch_size/16, **common_loader_params)
         self.best_dice_score = -float('inf')
 
         self.train_metrics = Metrics(n_classes=self.n_classes)
