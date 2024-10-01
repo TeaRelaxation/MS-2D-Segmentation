@@ -23,8 +23,6 @@ class BraTSDataset(Dataset):
             seg_filename = f"{subdir}_seg.nii"
             flair_path = os.path.join(self.root_dir, subdir, flair_filename)
             seg_path = os.path.join(self.root_dir, subdir, seg_filename)
-            print(flair_path)
-            print(seg_path)
             if os.path.exists(flair_path) and os.path.exists(seg_path):
                 samples.append((flair_path, seg_path))
 
@@ -35,7 +33,7 @@ class BraTSDataset(Dataset):
 
         if self.split == "train":
             return samples[:split_index]  # 80%
-        elif self.split == "test":
+        elif self.split == "val":
             return samples[split_index:]  # 20%
         return None
 
