@@ -1,4 +1,5 @@
 from .ms import MSDataset
+from .brats import BraTSDataset
 from .transform import get_augmentor, get_normalizer
 
 
@@ -42,6 +43,23 @@ def select_data(
         )
         val_data = MSDataset(
             root_dir=f"{dataset_path}/test",
+            augmentor=test_augmentor,
+            max_pixel=max_pixel,
+            normalizer=normalizer,
+            in_channels=in_channels
+        )
+    elif dataset_name == "BraTS":
+        train_data = BraTSDataset(
+            root_dir=f"{dataset_path}/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData",
+            split="train",
+            augmentor=train_augmentor,
+            max_pixel=max_pixel,
+            normalizer=normalizer,
+            in_channels=in_channels
+        )
+        val_data = BraTSDataset(
+            root_dir=f"{dataset_path}/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData",
+            split="val",
             augmentor=test_augmentor,
             max_pixel=max_pixel,
             normalizer=normalizer,

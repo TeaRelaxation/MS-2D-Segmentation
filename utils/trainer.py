@@ -17,7 +17,8 @@ class Trainer:
             device,
             logger,
             n_classes,
-            workers
+            workers,
+            depth
     ):
         self.criterion = criterion
         self.optimizer = optimizer
@@ -26,6 +27,7 @@ class Trainer:
         self.device = device
         self.logger = logger
         self.n_classes = n_classes
+        self.depth = depth
 
         self.model = model.to(self.device)
         common_loader_params = {'batch_size': batch_size, 'pin_memory': True, 'num_workers': workers}
@@ -69,7 +71,7 @@ class Trainer:
             preds_list, targets_list = self.evaluate()
 
             # 3D Evaluation
-            self.evaluate_3d(preds_list, targets_list)
+            self.evaluate_3d(preds_list, targets_list, self.depth)
 
             # Log and print results
             self.logger.log_train(
@@ -126,7 +128,7 @@ class Trainer:
 
         return preds_list, targets_list
 
-    def evaluate_3d(self, preds_list, targets_list):
+    def evaluate_3d(self, preds_list, targets_list, depth):
         with torch.no_grad():
             # convert list to tensor: (N,H,W)
             preds_tensor = torch.cat(preds_list, dim=0)
@@ -136,9 +138,8 @@ class Trainer:
             preds_cropped_tensor, targets_cropped_tensor = remove_pad(preds_tensor, targets_tensor)
 
             # Convert 2D to 3D: (N,H,W,D)
-            split_size = 181
-            preds_3d = convert_3d(preds_cropped_tensor, split_size)
-            targets_3d = convert_3d(targets_cropped_tensor, split_size)
+            preds_3d = convert_3d(preds_cropped_tensor, depth)
+            targets_3d = convert_3d(targets_cropped_tensor, depth)
 
             self.val_3d_metrics.iteration_end(output=preds_3d, label=targets_3d, loss=torch.tensor(0))
             self.val_3d_metrics.epoch_end(n_batches=1)
@@ -163,10 +164,10 @@ def remove_pad(preds, targets):
     return preds_cropped_tensor, targets_cropped_tensor
 
 
-def convert_3d(tensor_2d, split_size):
+def convert_3d(tensor_2d, depth):
     height = tensor_2d.size(1)
     width = tensor_2d.size(2)
-    num_splits = tensor_2d.size(0) // split_size
-    tensor_3d = tensor_2d[:num_splits * split_size].reshape(num_splits, split_size, height, width)
+    num_splits = tensor_2d.size(0) // depth
+    tensor_3d = tensor_2d[:num_splits * depth].reshape(num_splits, depth, height, width)
     tensor_3d = tensor_3d.permute(0, 2, 3, 1)
     return tensor_3d

@@ -37,6 +37,7 @@ args = parser.parse_args()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 criterion = select_loss(args.loss, device)
 logger = Logger(root_dir=args.logs_path, experiment_name=args.experiment)
+depth = 155 if args.dataset == "BraTS" else 181
 
 model = select_model(
     args.model,
@@ -74,7 +75,8 @@ trainer = Trainer(
     device=device,
     logger=logger,
     n_classes=args.n_classes,
-    workers=args.workers
+    workers=args.workers,
+    depth=depth
 )
 
 trainer.train()
