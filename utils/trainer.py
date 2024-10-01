@@ -61,6 +61,7 @@ class Trainer:
                 with torch.no_grad():
                     predicted_labels = torch.argmax(output, dim=1).long()
                     self.train_metrics.iteration_end(output=predicted_labels, label=lesion_slice, loss=loss)
+                print("Train batch end")
 
             self.scheduler.step()
 
@@ -122,6 +123,7 @@ class Trainer:
                 preds_list.append(predicted_labels)
 
                 self.val_metrics.iteration_end(output=predicted_labels, label=lesion_slice, loss=loss)
+                print("Val batch end")
 
             n_batches = len(self.val_dataloader)
             self.val_metrics.epoch_end(n_batches)
