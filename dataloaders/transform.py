@@ -19,8 +19,8 @@ def get_augmentor(mode, height, width):
         return A.Compose([
             get_padding(height, width),
             A.RandomCrop(height=height, width=width),
-            # A.HorizontalFlip(p=0.5),
-            # A.Rotate(limit=10, p=0.5),
+            A.HorizontalFlip(p=0.5),
+            A.Rotate(limit=10, p=0.5),
             # A.OneOf([
             #     # A.ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03, p=0.5),
             #     A.GridDistortion(p=0.5),
