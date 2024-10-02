@@ -30,9 +30,9 @@ class Trainer:
         self.depth = depth
 
         self.model = model.to(self.device)
-        common_loader_params = {'pin_memory': True, 'num_workers': workers}
-        self.train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size, **common_loader_params)
-        self.val_dataloader = DataLoader(val_dataset, shuffle=True, batch_size=int(batch_size/8), **common_loader_params)
+        common_loader_params = {'pin_memory': True, 'num_workers': workers, 'batch_size': batch_size}
+        self.train_dataloader = DataLoader(train_dataset, shuffle=True, **common_loader_params)
+        self.val_dataloader = DataLoader(val_dataset, shuffle=False, **common_loader_params)
         self.best_dice_score = -float('inf')
 
         self.train_metrics = Metrics(n_classes=self.n_classes)
@@ -61,7 +61,6 @@ class Trainer:
                 with torch.no_grad():
                     predicted_labels = torch.argmax(output, dim=1).long()
                     self.train_metrics.iteration_end(output=predicted_labels, label=lesion_slice, loss=loss)
-                print("Train batch end")
 
             self.scheduler.step()
 
@@ -123,7 +122,6 @@ class Trainer:
                 preds_list.append(predicted_labels)
 
                 self.val_metrics.iteration_end(output=predicted_labels, label=lesion_slice, loss=loss)
-                print("Val batch end")
 
             n_batches = len(self.val_dataloader)
             self.val_metrics.epoch_end(n_batches)
